@@ -150,7 +150,7 @@ where DepartmentCity = 'lviv';
 select *
 from client
 where Education = 'high'
-order by FirstName;
+order by LastName;
 
 
 # 4. +Виконати сортування у зворотньому порядку над таблицею Заявка і вивести 5 останніх елементів.
@@ -161,18 +161,20 @@ limit 5;
 
 
 # 5. +Вивести усіх клієнтів, чиє прізвище закінчується на OV чи OVA.
-select *
-from client
+select * from client
 where LastName like '%iv'
    or LastName like '%iva';
 
 
 # 6. +Вивести клієнтів банку, які обслуговуються київськими відділеннями.
 select idClient, FirstName, DepartmentCity
-from client
-         join department
+from client, department
 where idDepartment = Department_idDepartment
   and DepartmentCity = 'kyiv';
+
+
+
+
 
 
 # 7. +Вивести імена клієнтів та їхні номера телефону, погрупувавши їх за іменами.
@@ -182,39 +184,28 @@ order by FirstName;
 
 
 # 8. +Вивести дані про клієнтів, які мають кредит більше ніж на 5000 тисяч гривень.
-select idClient,
-       FirstName,
-       LastName,
-       Passport,
-       City,
-       Age,
-       Sum,
-       CreditState,
-       Currency
-from client
-         join application
-on application.Client_idClient = client.idClient
+select *
+from client, application
+where application.Client_idClient = client.idClient
   and Sum > 5000
   and Currency = 'gryvnia';
 
 
 # 9. +Порахувати кількість клієнтів усіх відділень та лише львівських відділень.
-select count(idClient) as count, DepartmentCity
-from client
-         join department
+select count(idClient)
+from client, department
 where idDepartment = Department_idDepartment
   and DepartmentCity = 'lviv'
-group by DepartmentCity;
-
-select count(idClient) as count_all
+union
+select count(idClient)
 from client;
 
 
 # 10. Знайти кредити, які мають найбільшу суму для кожного клієнта окремо.
 select Client_idClient, FirstName, max(sum) as sum
-from client
-         left join application on Client_idClient = idClient
-group by FirstName;
+from client, application
+where Client_idClient = idClient
+group by idClient;
 
 
 # 11. Визначити кількість заявок на крдеит для кожного клієнта.
@@ -224,35 +215,27 @@ from client
 group by FirstName;
 
 
+
 # 12. Визначити найбільший та найменший кредити.
 select max(sum), min(Sum)
 from application;
 
-select FirstName, idClient, sum
-from application
-         join client c on application.Client_idClient = c.idClient
-order by sum desc
-limit 1;
 
-select FirstName, idClient, sum
-from application
-         join client c on application.Client_idClient = c.idClient
-order by sum
-limit 1;
 
 
 # 13. Порахувати кількість кредитів для клієнтів,які мають вищу освіту.
-select count(idApplication), Education
+select count(idApplication), Education, FirstName
 from application
          join client on idClient = Client_idClient
-where Education = 'high';
+where Education = 'high'
+group by idClient;
 
 
 # 14. Вивести дані про клієнта, в якого середня сума кредитів найвища.
 select FirstName, avg(Sum) as avg
 from client
          join application on idClient = Client_idClient
-group by FirstName
+group by idClient
 order by avg desc
 limit 1;
 
@@ -286,11 +269,6 @@ set Sum      = 6000,
     Currency = 'gryvnia'
 where Education = 'high';
 
-select FirstName, Education, sum
-from client
-         join application on idClient = Client_idClient
-where Education = 'high';
-
 
 # 18. Усіх клієнтів київських відділень пересилити до Києва.
 # запит для теста
@@ -298,17 +276,16 @@ select FirstName, City, DepartmentCity, idDepartment
 from department
          join client on idDepartment = Department_idDepartment
 where DepartmentCity = 'kyiv';
-
+/*Повна форма*/
 update client
     join department d on client.Department_idDepartment = d.idDepartment
 set City = 'kyiv'
 where DepartmentCity = 'kyiv';
+/*Скорочена форма*/
+update client, department
+set City = 'Kyiv'
+where  Department_idDepartment = idDepartment and DepartmentCity = 'Kyiv';
 
-# перевірка
-select FirstName, City, DepartmentCity, idDepartment
-from department
-         join client on idDepartment = Department_idDepartment
-where DepartmentCity = 'kyiv';
 
 
 # 19. Видалити усі кредити, які є повернені.
@@ -327,18 +304,18 @@ from application
          join client c on application.Client_idClient = c.idClient
 where substr(LastName, 2, 1) in ('a', 'e', 'i', 'o', 'u', 'y');
 
-update application
-    join client c on application.Client_idClient = c.idClient
-set CreditState = 'delete'
-where substr(LastName, 2, 1) in ('a', 'e', 'i', 'o', 'u', 'y');
 
-delete
-from application
-where CreditState = 'delete';
+delete application from application, client
+where idClient = Client_idClient
+and substr(LastName, 2, 1) in ('a', 'e', 'i', 'o', 'u', 'y');
+
+
+
+
 
 
 # Знайти львівські відділення, які видали кредитів на загальну суму більше ніж 5000
-select idDepartment, sum(sum) as summ, FirstName, DepartmentCity
+select idDepartment, sum(sum) as summ, DepartmentCity
 from department
          join client on Department_idDepartment = idDepartment
          join application on idClient = Client_idClient
@@ -355,6 +332,7 @@ from application
 where CreditState = 'returned'
   and Sum > 5000
 group by idClient;
+
 
 
 
