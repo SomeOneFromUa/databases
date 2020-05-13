@@ -167,23 +167,18 @@
 
 
 
-
-
-
-
-
 //1) Знайти всіх дітей в яких сердня оцінка 4.2
 // db.getCollection('students').find({
 //     avgScore: 4.2
 //     })
-//
+
 
 
 //2) Знайди всіх дітей з 1 класу
 // db.getCollection('students').find({
 //     class: 1
 //     })
-
+//
 
 
 
@@ -191,8 +186,8 @@
 // db.getCollection('students').find({
 //     lessons: 'english'
 //     })
-//
-//
+
+
 
 
 
@@ -201,8 +196,8 @@
 //     .find({
 //         "parents.profession": "scientist"
 //         })
-//
-//
+
+
 
 
 //5) Знайти дітей, в яких середня оцінка більша за 4
@@ -211,6 +206,7 @@
 //         $gt: 4
 //         }
 //     })
+//
 
 
 //6) Знайти найкращого учня
@@ -244,13 +240,13 @@
 
 
 //9) Знайти середній бал по школі
-// db.getCollection('students').aggregate(
+//  db.getCollection('students').aggregate(
 // [
 // {$group: {
-//     "_id": "score=",
+//     "_id": "",
 //     avg: {$avg: "$avgScore"}
 //     }
-//
+
 //     }
 // ]
 // )
@@ -265,28 +261,23 @@
 //      {lessons: 'mathematics'},
 //     {lessons: 'physics'}
 //     ],
-//
 //         }
-//
 //     },
 //     {
 //             $group: {
-//      "_id": "score=",
+//      "_id": "",
 //      avg: {$avg: "$avgScore"}
 //      },
-//
 //         }
 //
-//
-//
 // ])
-//
+
 
 
 //11) Знайти середній бал по 2 класі
 // db.getCollection('students').aggregate([
 //  {
-//         $match: {class: 2.0},
+//         $match: {class: 2},
 //
 //         },
 // {
@@ -327,26 +318,31 @@
 // ])
 
 
+//
+// db.students.find(
+// {
+//     $and: [
+//     {parents: {$ne: null}},
+//     {"parents.profession": null}
+//     ]
+//
+//     })
 
 
 
 //14) Не працюючих батьків влаштувати офіціантами
-// db.getCollection('students').aggregate([
+// db.students.updateMany(
 // {
-//     $unwind: "$parents"
+// $and: [
+//     {parents: {$ne: null}},
+//     {"parents.profession": null}
+//     ]
+//
 //     },
 //     {
-//
-//         $match: {"parents.profession": {$exists: false}}
-//         },
-//         {
-//     $set: {
-//         "parents.profession": 'waiter'
-//         }
+//     $set: {"parents.$.profession": 'waiter'}
 //     }
-//
-//
-// ])
+// )
 
 
 
@@ -421,4 +417,8 @@
 //     {$limit: 1}
 //
 // ])
+
+
+
+
 
