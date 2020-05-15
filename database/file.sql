@@ -155,9 +155,9 @@ order by LastName;
 
 # 4. +Виконати сортування у зворотньому порядку над таблицею Заявка і вивести 5 останніх елементів.
 select *
-from application
-order by idApplication desc
-limit 5;
+        from application
+        order by idApplication desc
+        limit 5;
 
 
 # 5. +Вивести усіх клієнтів, чиє прізвище закінчується на OV чи OVA.
@@ -201,11 +201,12 @@ select count(idClient)
 from client;
 
 
+
 # 10. Знайти кредити, які мають найбільшу суму для кожного клієнта окремо.
-select Client_idClient, FirstName, max(sum) as sum
+select Client_idClient, FirstName, max(sum) as sumMax
 from client, application
 where Client_idClient = idClient
-group by idClient;
+group by Client_idClient, FirstName;
 
 
 # 11. Визначити кількість заявок на крдеит для кожного клієнта.
@@ -228,11 +229,11 @@ select count(idApplication), Education, FirstName
 from application
          join client on idClient = Client_idClient
 where Education = 'high'
-group by idClient;
+group by idClient, Education, FirstName;
 
 
 # 14. Вивести дані про клієнта, в якого середня сума кредитів найвища.
-select FirstName, avg(Sum) as avg
+select FirstName, idClient, avg(Sum) as avg
 from client
          join application on idClient = Client_idClient
 group by idClient
@@ -241,17 +242,17 @@ limit 1;
 
 
 # 15. Вивести відділення, яке видало в кредити найбільше грошей
-select idDepartment, sum(Sum) as summ
+select idDepartment, DepartmentCity, sum(Sum) as summ
 from department
          join client on Department_idDepartment = idDepartment
          JOIN application on idClient = Client_idClient
-group by idDepartment
+group by idDepartment, DepartmentCity
 order by summ desc
 limit 1;
 
 
 # 16. Вивести відділення, яке видало найбільший кредит.
-select idDepartment, max(sum)
+select idDepartment, DepartmentCity, max(sum)
 from department
          join client on Department_idDepartment = idDepartment
          JOIN application on idClient = Client_idClient;
@@ -272,15 +273,20 @@ where Education = 'high';
 
 # 18. Усіх клієнтів київських відділень пересилити до Києва.
 # запит для теста
+
 select FirstName, City, DepartmentCity, idDepartment
 from department
          join client on idDepartment = Department_idDepartment
 where DepartmentCity = 'kyiv';
+
+
+
 /*Повна форма*/
 update client
     join department d on client.Department_idDepartment = d.idDepartment
 set City = 'kyiv'
 where DepartmentCity = 'kyiv';
+
 /*Скорочена форма*/
 update client, department
 set City = 'Kyiv'
@@ -320,7 +326,7 @@ from department
          join client on Department_idDepartment = idDepartment
          join application on idClient = Client_idClient
 where DepartmentCity = 'lviv'
-group by idDepartment
+group by idDepartment, DepartmentCity
 order by summ desc
 limit 1;
 
@@ -331,7 +337,7 @@ from application
          join client c on application.Client_idClient = c.idClient
 where CreditState = 'returned'
   and Sum > 5000
-group by idClient;
+group by idClient, FirstName, CreditState;
 
 
 
@@ -344,7 +350,7 @@ select sum(sum) as summ, CreditState, FirstName, idClient
 from application
          join client c on application.Client_idClient = c.idClient
 where CreditState = 'Not returned'
-group by idClient
+group by CreditState, FirstName, idClient
 order by summ desc
 limit 1;
 
@@ -353,7 +359,7 @@ limit 1;
 select sum(sum) as summ, CreditState, FirstName, idClient
 from application
          join client c on application.Client_idClient = c.idClient
-group by idClient
+group by CreditState, FirstName, idClient
 order by summ
 limit 1;
 
@@ -373,6 +379,7 @@ select sum(sum)
 from application
 where sum > (select avg(sum) from application)
 group by Client_idClient;
+
 
 
 # Знайти клієнтів, які є з того самого міста, що і клієнт, який взяв найбільшу кількість кредитів
@@ -398,7 +405,7 @@ where city = (select city from client
 select City, FirstName, idClient, sum(Sum) as summ
 from application
          join client c on application.Client_idClient = c.idClient
-group by idClient
+group by idClient, City, FirstName
 order by summ desc
 limit 1;
 
@@ -406,4 +413,3 @@ drop database bank;
 
 # set sql_safe_updates = 0;
 # set sql_safe_updates = 1;
-
